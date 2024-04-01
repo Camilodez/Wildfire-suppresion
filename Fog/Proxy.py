@@ -5,45 +5,52 @@ from datetime import datetime
 class ProxyFog:
     def __init__(self, pull_bind_address, sistema_calidad_address):
         self.context = zmq.Context()
-        # Socket PULL para recibir datos de los sensores
         self.pull_socket = self.context.socket(zmq.PULL)
         self.pull_socket.bind(pull_bind_address)
-        # Socket PUSH para enviar alertas al sistema de calidad de Fog
-        self.push_socket = self.context.socket(zmq.PUSH)
-        self.push_socket.connect(sistema_calidad_address)
-        # Para almacenar las últimas temperaturas recibidas de los sensores
+        self.push_socket_calidad = self.context.socket(zmq.PUSH)
+        self.push_socket_calidad.connect(sistema_calidad_address)
         self.temperaturas = []
+        self.humedades = []
 
     def iniciar(self):
         print("Proxy de Fog Computing iniciado y esperando datos...")
         while True:
             mensaje = self.pull_socket.recv_string()
             dato = json.loads(mensaje)
-
-            # Validar la muestra
             if self.validar_muestra(dato):
-                print(f"Dato recibido: {dato}")
                 if dato['tipo'] == 'Temperatura':
-                    self.temperaturas.append(dato['valor'])
-                    if len(self.temperaturas) == 10:  # Si hay 10 temperaturas, calcular el promedio
-                        promedio = sum(self.temperaturas) / len(self.temperaturas)
-                        fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                        print(f"Promedio de temperatura: {promedio} - Fecha: {fecha}")
-                        self.temperaturas.pop(0)  # Eliminar la temperatura más antigua
-                        # Comprobar si la temperatura está fuera de rango y enviar alerta
-                        if promedio > 29.4:  # Valor máximo según la tabla proporcionada
-                            self.enviar_alerta(f"Temperatura promedio alta detectada: {promedio}")
-            else:
-                print(f"Error en los datos recibidos: {dato}")
+                    self.procesar_temperatura(dato)
+                elif dato['tipo'] == 'Humedad':
+                    self.procesar_humedad(dato)
 
     def validar_muestra(self, dato):
-        # Asumiendo que los valores erróneos están bien definidos como 'None'
         if dato['valor'] is None:
             return False
         return True
 
-    def enviar_alerta(self, mensaje):
-        self.push_socket.send_string(mensaje)
+    def procesar_temperatura(self, dato):
+        self.temperaturas.append(dato['valor'])
+        if len(self.temperaturas) == 10:  # Suponiendo que mantenemos un promedio móvil de las últimas 10 temperaturas
+            promedio_temp = sum(self.temperaturas) / len(self.temperaturas)
+            fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            print(f"Promedio de temperatura: {promedio_temp} - Fecha: {fecha}")
+            self.temperaturas.pop(0)  # Eliminar la temperatura más antigua
+            if promedio_temp > 29.4:  # Valor máximo según la tabla proporcionada
+                self.enviar_alerta_calidad(f"Temperatura promedio alta detectada: {promedio_temp}")
+
+    def procesar_humedad(self, dato):
+        self.humedades.append(dato['valor'])
+        if len(self.humedades) == 10:  # Suponiendo que mantenemos un promedio móvil de las últimas 10 humedades
+            promedio_hum = sum(self.humedades) / len(self.humedades)
+            if not (70 <= promedio_hum <= 100):  # Rango de humedad según la tabla proporcionada
+                self.enviar_alerta_calidad(f"Humedad fuera de rango: {promedio_hum}%")
+            self.humedades.pop(0) 
+
+    def enviar_alerta_calidad(self, mensaje):
+        self.push_socket_calidad.send_string(json.dumps({
+            'alerta': mensaje,
+            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }))
 
 def main():
     PULL_BIND_ADDRESS = "tcp://*:5555"
