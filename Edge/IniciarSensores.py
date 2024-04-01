@@ -1,8 +1,8 @@
 # iniciar_sensores.py
 
-from sensor_de_temperatura import SensorDeTemperatura
-from sensor_de_humedad import SensorDeHumedad
-from sensor_de_humo import SensorDeHumo
+from SensorTemperatura import SensorDeTemperatura
+from Sensorhumedad import SensorDeHumedad
+from SensorHumo import SensorDeHumo
 
 def iniciar_sensores(fog_address, config_path):
     sensores = []
@@ -29,6 +29,7 @@ def iniciar_sensores(fog_address, config_path):
         sensor.join()
 
 if __name__ == "__main__":
-    FOG_ADDRESS = "tcp://localhost:5555"
+    FOG_ADDRESS = "tcp://10.43.100.174:2789"
+
     CONFIG_PATH = "config.json"
     iniciar_sensores(FOG_ADDRESS, CONFIG_PATH)

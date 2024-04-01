@@ -1,6 +1,6 @@
 # sensor_de_humedad.py
 
-from sensor import Sensor
+from Sensor import Sensor
 import random
 
 class SensorDeHumedad(Sensor):

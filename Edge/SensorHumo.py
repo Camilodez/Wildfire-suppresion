@@ -1,6 +1,6 @@
 # sensor_de_humo.py
 
-from sensor import Sensor
+from Sensor import Sensor
 import random
 
 class SensorDeHumo(Sensor):
