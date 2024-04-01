@@ -29,7 +29,7 @@ def iniciar_sensores(fog_address, calidad_edge_address, config_path):
         sensor.join()
 
 if __name__ == "__main__":
-    FOG_ADDRESS = "tcp://localhost:5555"
+    FOG_ADDRESS = "tcp://10.43.100.47:5555"
     CALIDAD_EDGE_ADDRESS = "tcp://localhost:5558"  # Asumiendo que el sistema de calidad en Edge escucha en este puerto
     CONFIG_PATH = "config.json"
     iniciar_sensores(FOG_ADDRESS, CALIDAD_EDGE_ADDRESS, CONFIG_PATH)
