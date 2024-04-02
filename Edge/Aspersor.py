@@ -1,27 +1,32 @@
 import zmq
 
 class ActuadorAspersor:
-    def __init__(self, bind_address):
+    def __init__(self, subscribe_address):
         self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.PULL)
-        self.socket.bind(bind_address)
+        # Cambiar de PULL a SUB
+        self.socket = self.context.socket(zmq.SUB)
+        # Conectar al publicador, no usar bind en el modelo SUB
+        self.socket.connect(subscribe_address)
+        # Suscribirse a un tema específico, en este caso "Humo detectado" o similar
+        self.socket.setsockopt_string(zmq.SUBSCRIBE, 'Humo')
         self.activado = False
 
     def escuchar_sensores(self):
         print("Actuador Aspersor esperando señales de los sensores de humo...")
         while True:
-            # Espera una señal de activación de algún sensor de humo
-            mensaje = self.socket.recv_string()
-            self.activar_aspersor(mensaje)
+            # Recibir mensajes; ahora filtrados por el tema de suscripción
+            topic, mensaje = self.socket.recv_multipart()
+            print(f"Señal recibida: {mensaje.decode('utf-8')}. Activando aspersor...")
+            self.activar_aspersor(mensaje.decode('utf-8'))
 
     def activar_aspersor(self, mensaje):
-        print(f"Señal recibida: {mensaje}. Activando aspersor...")
+        # Procesamiento basado en el mensaje recibido, activa el aspersor si es necesario
         self.activado = True
-        # Aquí se incluiría el código para activar el aspersor real
+        print("Aspersor activado.")
 
 def main():
-    ACTUADOR_BIND_ADDRESS = "tcp://*:5556"  # Puerto y dirección para el actuador aspersor
-    actuador = ActuadorAspersor(ACTUADOR_BIND_ADDRESS)
+    SUBSCRIBE_ADDRESS = "tcp://*:5556"  
+    actuador = ActuadorAspersor(SUBSCRIBE_ADDRESS)
     actuador.escuchar_sensores()
 
 if __name__ == "__main__":

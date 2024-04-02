@@ -1,5 +1,3 @@
-# sensor.py
-
 import zmq
 import threading
 import random
@@ -15,7 +13,7 @@ class Sensor(threading.Thread):
         self.intervalo = intervalo
         self.config = self.cargar_configuracion(config_path)
         self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.PUSH)
+        self.socket = self.context.socket(zmq.PUB)  # Usando PUB para publicar mensajes
         self.socket.connect(fog_address)
 
     def cargar_configuracion(self, config_path):
@@ -44,7 +42,7 @@ class Sensor(threading.Thread):
             'valor': valor,
             'timestamp': time.time()
         })
-        self.socket.send_string(mensaje)
+        self.socket.send_string(f"{self.tipo} {mensaje}")
         print(f"Sensor {self.id_sensor} de {self.tipo} envió: {mensaje}")
 
     def generar_valor_correcto(self):

@@ -3,20 +3,22 @@ import json
 from datetime import datetime
 
 class ProxyFog:
-    def __init__(self, pull_bind_address, sistema_calidad_address):
-        self.context = zmq.Context()
-        self.pull_socket = self.context.socket(zmq.PULL)
-        self.pull_socket.bind(pull_bind_address)
-        self.push_socket_calidad = self.context.socket(zmq.PUSH)
-        self.push_socket_calidad.connect(sistema_calidad_address)
-        self.temperaturas = []
-        self.humedades = []
+    def __init__(self, subscribe_address, publish_calidad_address):
+         self.context = zmq.Context()
+         self.subscribe_socket = self.context.socket(zmq.SUB)
+         self.subscribe_socket.bind(subscribe_address)  # El proxy SUBSCRIBE socket se suele configurar con bind
+         self.subscribe_socket.setsockopt_string(zmq.SUBSCRIBE, '')  # Suscribir a todos los mensajes
+        # Cambiar de PUSH a PUB para las alertas
+         self.publish_socket_calidad = self.context.socket(zmq.PUB)
+         self.publish_socket_calidad.bind(publish_calidad_address)
+         self.temperaturas = []
+         self.humedades = []
 
     def iniciar(self):
         print("Proxy de Fog Computing iniciado y esperando datos...")
         while True:
-            mensaje = self.pull_socket.recv_string()
-            dato = json.loads(mensaje)
+            topic, mensaje_json = self.subscribe_socket.recv_multipart()
+            dato = json.loads(mensaje_json)
             if self.validar_muestra(dato):
                 if dato['tipo'] == 'Temperatura':
                     self.procesar_temperatura(dato)
@@ -49,15 +51,16 @@ class ProxyFog:
             self.humedades.pop(0) 
 
     def enviar_alerta_calidad(self, mensaje):
-        self.push_socket_calidad.send_string(json.dumps({
+        # Envía la alerta como un tema con el mensaje
+        self.publish_socket_calidad.send_multipart([b'alerta', json.dumps({
             'alerta': mensaje,
             'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        }))
+        }).encode('utf-8')])
 
 def main():
-    PULL_BIND_ADDRESS = "tcp://*:5555"
-    SISTEMA_CALIDAD_ADDRESS = "tcp://localhost:5556"  # Cambiar si es necesario
-    proxy = ProxyFog(PULL_BIND_ADDRESS, SISTEMA_CALIDAD_ADDRESS)
+    SUBSCRIBE_ADDRESS  = "tcp://*:5555"
+    PUBLISH_CALIDAD_ADDRESS  = "tcp://localhost:5556"  
+    proxy = ProxyFog(SUBSCRIBE_ADDRESS , PUBLISH_CALIDAD_ADDRESS)
     proxy.iniciar()
 
 if __name__ == "__main__":
