@@ -13,7 +13,7 @@ class SistemaCalidadFog:
             print(f"ALERTA: {alerta}")
 
 def main():
-    BIND_ADDRESS = "tcp://*:5556"  # Asegúrate de que este puerto esté libre y disponible
+    BIND_ADDRESS = "tcp://*:5556"  
     sistema_calidad_fog = SistemaCalidadFog(BIND_ADDRESS)
     sistema_calidad_fog.iniciar()
 

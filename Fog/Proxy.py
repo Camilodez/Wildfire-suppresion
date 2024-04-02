@@ -30,19 +30,21 @@ class ProxyFog:
 
     def procesar_temperatura(self, dato):
         self.temperaturas.append(dato['valor'])
-        if len(self.temperaturas) == 10:  # Suponiendo que mantenemos un promedio móvil de las últimas 10 temperaturas
+        if len(self.temperaturas) == 10:  
             promedio_temp = sum(self.temperaturas) / len(self.temperaturas)
             fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             print(f"Promedio de temperatura: {promedio_temp} - Fecha: {fecha}")
-            self.temperaturas.pop(0)  # Eliminar la temperatura más antigua
-            if promedio_temp > 29.4:  # Valor máximo según la tabla proporcionada
+            self.temperaturas.pop(0)  
+            if promedio_temp > 29.4:  
                 self.enviar_alerta_calidad(f"Temperatura promedio alta detectada: {promedio_temp}")
+
+
 
     def procesar_humedad(self, dato):
         self.humedades.append(dato['valor'])
-        if len(self.humedades) == 10:  # Suponiendo que mantenemos un promedio móvil de las últimas 10 humedades
+        if len(self.humedades) == 10:  
             promedio_hum = sum(self.humedades) / len(self.humedades)
-            if not (70 <= promedio_hum <= 100):  # Rango de humedad según la tabla proporcionada
+            if not (70 <= promedio_hum <= 100): 
                 self.enviar_alerta_calidad(f"Humedad fuera de rango: {promedio_hum}%")
             self.humedades.pop(0) 
 

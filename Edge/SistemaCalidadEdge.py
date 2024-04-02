@@ -12,11 +12,11 @@ class SistemaCalidadEdge:
         while True:
             mensaje_json = self.socket.recv_string()
             mensaje = json.loads(mensaje_json)
-            # Suponiendo que el mensaje contiene un campo 'mensaje' que describe el fallo
+            
             print(f"ALERTA DE FALLO: {mensaje['mensaje']} en el sensor {mensaje['id_sensor']}")
 
 def main():
-    # Asumiendo que usamos el puerto 5558 para el sistema de calidad en Edge
+   
     BIND_ADDRESS = "tcp://*:5558"
     sistema_calidad_edge = SistemaCalidadEdge(BIND_ADDRESS)
     sistema_calidad_edge.iniciar()
