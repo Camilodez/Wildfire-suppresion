@@ -8,7 +8,7 @@ def cargar_configuracion():
 config = cargar_configuracion()
 context = zmq.Context()
 socket = context.socket(zmq.REP)
-socket.bind(f"tcp://{config['sistema_calidad_fog_ip']}:{config['sistema_calidad_fog_port']}")
+socket.bind(f"tcp://{config['sistema_calidad_cloud_ip']}:{config['sistema_calidad_cloud_port']}")
 
 while True:
     message = socket.recv_string()
