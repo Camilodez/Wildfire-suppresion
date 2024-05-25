@@ -12,7 +12,7 @@ context = zmq.Context()
 
 # Socket para verificar la salud del proxy principal
 health_socket = context.socket(zmq.REQ)
-health_socket.connect(f"tcp://{config['proxy_ip']}:{config['proxy_port']}")
+health_socket.connect(f"tcp://{config['proxy_ip']}:{config['proxy_port'] + 1}")
 
 def verificar_salud():
     try:
