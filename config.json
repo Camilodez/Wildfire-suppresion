@@ -12,8 +12,8 @@
     "sistema_calidad_edge_port": 5561,
     "sistema_calidad_fog_ip": "192.168.1.4",
     "sistema_calidad_fog_port": 5562,
-    "sistema_calidad_cloud_ip": "192.168.1.5",
+    "sistema_calidad_cloud_ip": "192.168.1.4",
     "sistema_calidad_cloud_port": 5563,
-    "cloud_ip": "192.168.1.5",
+    "cloud_ip": "192.168.1.4",
     "cloud_port": 5564
 }
