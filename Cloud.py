@@ -13,7 +13,7 @@ context = zmq.Context()
 
 # Socket para recibir datos del Proxy
 socket = context.socket(zmq.PULL)
-socket.bind(f"tcp://{config['cloud_ip']}:{config['cloud_port']}")
+socket.bind(f"tcp://*:{config['cloud_port']}")
 
 # Socket para enviar alertas al Sistema de Calidad Cloud
 alert_socket = context.socket(zmq.REQ)
@@ -35,6 +35,7 @@ def almacenar_datos(data):
 while True:
     try:
         message = socket.recv_json(flags=zmq.NOBLOCK)
+        print(f"Recibido en Cloud: {message}")
         tipo = message.get("tipo")
         valor = message.get("valor")
         timestamp = message.get("timestamp")

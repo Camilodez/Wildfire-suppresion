@@ -1,34 +1,20 @@
 import zmq
 import json
-import time
-import subprocess
 
 def cargar_configuracion():
     with open('config.json', 'r') as f:
         return json.load(f)
 
+def activar_aspersor():
+    print("Aspersor activado!")
+
 config = cargar_configuracion()
 context = zmq.Context()
+socket = context.socket(zmq.REP)
+socket.bind(f"tcp://{config['aspersor_ip']}:{config['aspersor_port']}")
 
-# Socket para verificar la salud del proxy principal
-health_socket = context.socket(zmq.REQ)
-health_socket.connect(f"tcp://{config['proxy_ip']}:{config['proxy_port'] + 1}")
-
-def verificar_salud():
-    try:
-        health_socket.send_string("health_check")
-        health_socket.recv_string(flags=zmq.NOBLOCK)
-        return True
-    except zmq.Again:
-        return False
-
-def iniciar_proxy_emergencia():
-    subprocess.Popen(["python", "ProxyEmergencia.py"])
-
-if __name__ == "__main__":
-    while True:
-        if not verificar_salud():
-            print("El proxy principal ha fallado, iniciando proxy de emergencia...")
-            iniciar_proxy_emergencia()
-            break
-        time.sleep(5)
+while True:
+    message = socket.recv_string()
+    if message == "humo_detectado":
+        activar_aspersor()
+    socket.send_string("ack")

@@ -11,7 +11,7 @@ context = zmq.Context()
 
 # Socket para recibir datos de sensores
 socket = context.socket(zmq.PULL)
-socket.bind(f"tcp://{config['proxy_emergencia_ip']}:{config['proxy_emergencia_port']}")
+socket.bind(f"tcp://*:{config['proxy_emergencia_port']}")
 
 # Socket para enviar datos a Cloud
 cloud_socket = context.socket(zmq.PUSH)
@@ -21,7 +21,7 @@ def recibir_datos():
     while True:
         try:
             message = socket.recv_json(flags=zmq.NOBLOCK)
-            print(f"Recibido: {message}")
+            print(f"Recibido en Proxy de Emergencia: {message}")
             cloud_socket.send_json(message)
         except zmq.Again:
             pass

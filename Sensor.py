@@ -48,9 +48,9 @@ class Sensor:
             self.tomar_muestra()
             time.sleep(intervalo)
 
-def iniciar_sensor(sensor_class, intervalo):
-    sensor = sensor_class('config.json')
+def iniciar_sensor(sensor_class, intervalo, tipo):
+    sensor = sensor_class(tipo, 'config.json')
     sensor.iniciar(intervalo)
 
 if __name__ == "__main__":
-    pass  # Esto se implementará en las subclases
+    pass
