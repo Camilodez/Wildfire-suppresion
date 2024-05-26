@@ -12,5 +12,5 @@ socket.bind(f"tcp://{config['sistema_calidad_cloud_ip']}:{config['sistema_calida
 
 while True:
     message = socket.recv_string()
-    print(f"Alerta recibida: {message}")
+    print(f"Alerta recibida en Cloud: {message}")
     socket.send_string("ack")

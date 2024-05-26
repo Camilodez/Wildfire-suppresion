@@ -2,14 +2,21 @@ import zmq
 import json
 import time
 import random
+from threading import Thread
 
 class Sensor:
     def __init__(self, tipo, config_file):
         self.tipo = tipo
         self.cargar_configuracion(config_file)
         self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.PUSH)
-        self.socket.connect(f"tcp://{self.config['proxy_ip']}:{self.config['proxy_port']}")
+        self.proxy_socket = self.context.socket(zmq.PUSH)
+        self.proxy_socket.connect(f"tcp://{self.config['proxy_ip']}:{self.config['proxy_port']}")
+        self.emergency_socket = self.context.socket(zmq.PUSH)
+        self.emergency_socket.connect(f"tcp://{self.config['proxy_emergencia_ip']}:{self.config['proxy_emergencia_port']}")
+        self.status_socket = self.context.socket(zmq.SUB)
+        self.status_socket.connect(f"tcp://{self.config['sistema_calidad_edge_ip']}:{self.config['sistema_calidad_edge_port'] + 1}")
+        self.status_socket.setsockopt_string(zmq.SUBSCRIBE, "")
+        self.use_emergency = False
 
     def cargar_configuracion(self, config_file):
         with open(config_file, 'r') as f:
@@ -40,10 +47,30 @@ class Sensor:
         valor = self.generar_valor()
         timestamp = time.time()
         data = {"tipo": self.tipo, "valor": valor, "timestamp": timestamp}
-        self.socket.send_json(data)
-        print(f"Enviado: {data}")
+        try:
+            if self.use_emergency:
+                self.emergency_socket.send_json(data, zmq.NOBLOCK)
+                print(f"Enviado al Proxy de Emergencia: {data}")
+            else:
+                self.proxy_socket.send_json(data, zmq.NOBLOCK)
+                print(f"Enviado al Proxy Principal: {data}")
+        except zmq.ZMQError as e:
+            print(f"Error enviando datos: {e}")
+
+    def recibir_estado(self):
+        while True:
+            try:
+                message = self.status_socket.recv_string(flags=zmq.NOBLOCK)
+                if message == "estado: emergencia":
+                    self.use_emergency = True
+                else:
+                    self.use_emergency = False
+            except zmq.Again:
+                pass
+            time.sleep(1)
 
     def iniciar(self, intervalo):
+        Thread(target=self.recibir_estado).start()
         while True:
             self.tomar_muestra()
             time.sleep(intervalo)
