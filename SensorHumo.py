@@ -23,11 +23,11 @@ class SensorHumo(Sensor):
         timestamp = time.time()
         data = {"tipo": self.tipo, "valor": valor, "timestamp": timestamp}
         try:
-            self.socket.send_json(data, zmq.NOBLOCK)
+            self.proxy_socket.send_json(data, zmq.NOBLOCK)
             print(f"Enviado al Proxy Principal: {data}")
             if valor:
                 self.enviar_aspersor()
-        except zmq.Again:
+        except zmq.ZMQError:
             print(f"Error enviando al Proxy Principal: {data}")
             self.enviar_emergencia(data)
             if valor:
@@ -37,7 +37,7 @@ class SensorHumo(Sensor):
         try:
             self.aspersor_socket.send_string("activar_aspersor")
             self.aspersor_socket.recv_string()
-        except zmq.Again:
+        except zmq.ZMQError:
             print("Error activando el aspersor")
 
 if __name__ == "__main__":

@@ -16,7 +16,7 @@ heartbeat_socket.bind(f"tcp://*:{config['sistema_calidad_edge_port']}")
 
 # Socket para enviar el estado del proxy a los sensores
 status_socket = context.socket(zmq.PUB)
-status_socket.bind(f"tcp://*:{config['sistema_calidad_edge_port'] + 1}")
+status_socket.bind(f"tcp://*:{config['sistema_calidad_edge_port'] + 10}")  # Cambiado para evitar conflicto
 
 last_heartbeat_time = time.time()
 heartbeat_timeout = 15  # segundos
