@@ -25,7 +25,7 @@ pip install zmq json matplotlib pandas
         "proxy_port": 5558,
         "proxy_emergencia_ip": "10.43.100.67",
         "proxy_emergencia_port": 5565,
-        "aspersor_ip": "10.43.100.67",
+        "aspersor_ip": "10.43.100.174",
         "aspersor_port": 5560,
         "sistema_calidad_edge_ip": "10.43.100.174",
         "sistema_calidad_edge_port": 5561,
